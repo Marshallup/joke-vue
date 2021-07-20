@@ -11,17 +11,14 @@ export default new Vuex.Store({
     preloader: false,
   },
   getters: {
-    getDialog(state) {
-      return state.dialog;
+    getPreloader(state) {
+      return state.preloader;
     },
     getApiUrl(state) {
       return state.api_url;
     },
   },
   mutations: {
-    modalAddQuote(state) {
-      state.dialog = !state.dialog;
-    },
     setPreloader(state, status) {
       state.preloader = status;
     },

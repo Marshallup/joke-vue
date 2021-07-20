@@ -8,7 +8,7 @@
       <v-form class="form">
       <v-text-field
           solo
-          label="Поиск"
+          label="Search.."
           append-icon="mdi-card-search"
           class="search"
           v-model="search"

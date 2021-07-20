@@ -1,22 +1,20 @@
 <template>
-  <v-container
-      v-if="items"
-  >
+  <v-container>
     <v-row
         dense
         justify="start"
         align="start"
         wrap="wrap"
+        v-if="items.length"
     >
       <v-col
           cols="12" sm="12" mb="12" xl="12" lg="12"
           v-for="item in items"
           :key="item.id"
-          :class="{ 'liked': item.like }"
       >
         <v-card
           class="card--wrap"
-          color="#26c6da"
+          :class="{ 'teal lighten-1': item.like, blue: !item.like }"
         >
 
           <v-card-text class="headline white--text font-weight-bold">
@@ -24,13 +22,13 @@
           </v-card-text>
 
           <v-btn
-              class="mx-2 like"
-              fab
-              dark
-              small
-              color="pink"
-              @click="addLike(item.id)"
-          >
+            class="mx-2 like"
+            fab
+            dark
+            small
+            :class="{ 'pink': item.like, 'blue lighten-1': !item.like }"
+            @click="addLike(item.id)"
+        >
             <v-icon dark>
               mdi-heart
             </v-icon>
@@ -49,7 +47,13 @@
 
         </v-card>
       </v-col>
-
+    </v-row>
+    <v-row v-else-if="!items.length && !$store.getters.getPreloader">
+      <v-col>
+        <v-card-text class="text-h2 text-center">
+          No jokes found!
+        </v-card-text>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -67,14 +71,13 @@ export default {
     getItems() {
       this.$store.dispatch('jokes/getJokes');
     },
-    addLike(id) {
-      this.$store.dispatch('jokes/setLike', id);
+    async addLike(id) {
+      await this.$store.dispatch('jokes/setLike', id);
     },
   },
   async beforeMount() {
     // delete localStorage.likes;
     await this.getItems();
-    console.log(this.items, 'filter');
   },
 };
 </script>

@@ -15,9 +15,6 @@ export default {
       return state.search.toLowerCase();
     },
     getLikes(state) {
-      if (state.likes) {
-        return JSON.parse(state.likes);
-      }
       return state.likes;
     },
   },
@@ -40,15 +37,13 @@ export default {
         dispatch,
       },
     ) {
-      commit('setJokes', []);
       commit('setPreloader', true, { root: true });
       const apiUrl = `${rootGetters.getApiUrl}Any?amount=10&lang=en&type=single&format=json`;
       const response = await axios.get(apiUrl)
         .then((res) => {
-          console.log(res.data);
-          const dataQuotes = res.data.jokes;
-          commit('setJokes', dataQuotes);
-          dispatch('getLikes');
+          const dataJokes = res.data.jokes;
+          commit('setJokes', dataJokes);
+          commit('setLikes', JSON.parse(localStorage.getItem('likes')));
           dispatch('setLikeJokes');
           return res.data;
         })
@@ -59,40 +54,52 @@ export default {
       commit('setPreloader', false, { root: true });
       return response;
     },
-    getLikes({ commit, getters }) {
-      commit('setLikes', localStorage.getItem('likes'));
-      return getters.getLikes;
-    },
-    async setLike({ dispatch }, id) {
-      let likes = await dispatch('getLikes');
-      console.log(likes, 'likes');
+    async setLike({ getters, commit, dispatch }, id) {
+      let likes = getters.getLikes;
+      let del = false;
       if (likes) {
-        likes.push(id);
+        const isLike = likes.indexOf(id);
+        if (isLike !== -1) {
+          del = true;
+        }
+        if (!del) {
+          likes.push(id);
+        } else {
+          likes.splice(isLike, 1);
+        }
       } else {
         likes = [id];
       }
+      commit('setLikes', likes);
       await localStorage.setItem('likes', JSON.stringify(likes));
-      await dispatch('getLikes');
-      await dispatch('setLikeJokes');
+      if (!del) {
+        await dispatch('setLikeJokes');
+      } else {
+        await dispatch('setLikeJokes', id);
+      }
     },
-    setLikeJokes({ getters, commit }) {
-      const jokes = getters.getJokes;
+    async setLikeJokes({ getters, state }, delId) {
       const likes = getters.getLikes;
 
-      if (likes) {
+      const jokes = getters.getJokes;
+      if (likes && typeof delId !== 'number') {
         for (let i = 0; i < likes.length; i += 1) {
           for (let j = 0; j < jokes.length; j += 1) {
             const joke = jokes[j];
             if (joke.id === likes[i]) {
-              joke.like = true;
+              jokes[j].like = true;
+              state.jokes.splice(j, 1, jokes[j]);
             }
           }
-          // console.log(i, 'i', jokes);
+        }
+      } else if (typeof delId === 'number') {
+        for (let j = 0; j < jokes.length; j += 1) {
+          if (jokes[j].id === delId) {
+            jokes[j].like = false;
+            state.jokes.splice(j, 1, jokes[j]);
+          }
         }
       }
-      commit('setJokes', jokes);
-      console.log(jokes, getters.getJokes, 'geets');
-      console.log(jokes, likes, 'kpo');
     },
   },
 };
