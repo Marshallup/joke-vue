@@ -12,6 +12,7 @@
           cols="12" sm="12" mb="12" xl="12" lg="12"
           v-for="item in items"
           :key="item.id"
+          :class="{ 'liked': item.like }"
       >
         <v-card
           class="card--wrap"
@@ -28,6 +29,7 @@
               dark
               small
               color="pink"
+              @click="addLike(item.id)"
           >
             <v-icon dark>
               mdi-heart
@@ -65,8 +67,12 @@ export default {
     getItems() {
       this.$store.dispatch('jokes/getJokes');
     },
+    addLike(id) {
+      this.$store.dispatch('jokes/setLike', id);
+    },
   },
   async beforeMount() {
+    // delete localStorage.likes;
     await this.getItems();
     console.log(this.items, 'filter');
   },
@@ -100,5 +106,8 @@ export default {
   .like {
     display: block;
     margin-left: auto !important;
+  }
+  .liked {
+    background: red !important;
   }
 </style>
